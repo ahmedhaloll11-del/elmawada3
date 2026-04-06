@@ -1,18 +1,788 @@
-div style={{height:6,background:C.pr6,borderRadius:99,overflow:"hidden"}}><div style={{height:"100%",width:`${pct}%`,background:b.brd,borderRadius:99}}/></div>
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="المودة"/>
+<meta name="application-name" content="مجموعة المودة"/>
+<meta name="theme-color" content="#075E54"/>
+<meta name="description" content="نظام إدارة حجوزات الطيور - مجموعة المودة"/>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%23075E54'/><text y='62' font-size='58' x='50' text-anchor='middle'>🐥</text></svg>"/>
+<link rel="manifest" href="data:application/manifest+json,%7B%22name%22%3A%22%D9%85%D8%AC%D9%85%D9%88%D8%B9%D8%A9%20%D8%A7%D9%84%D9%85%D9%88%D8%AF%D8%A9%22%2C%22short_name%22%3A%22%D8%A7%D9%84%D9%85%D9%88%D8%AF%D8%A9%22%2C%22display%22%3A%22standalone%22%2C%22start_url%22%3A%22.%2F%22%2C%22background_color%22%3A%22%23075E54%22%2C%22theme_color%22%3A%22%23075E54%22%2C%22lang%22%3A%22ar%22%2C%22dir%22%3A%22rtl%22%7D"/>
+<title>مجموعة المودة</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Tajawal:wght@700;800;900&display=swap" rel="stylesheet"/>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;overscroll-behavior:none;}
+body{font-family:'Cairo',sans-serif;direction:rtl;background:#ECE5DD;-webkit-overflow-scrolling:touch;-webkit-font-smoothing:antialiased;transition:background .3s;}
+body.dark{background:#0B141A;}
+input,textarea,button,select{font-family:'Cairo',sans-serif;}
+input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;}
+*{scrollbar-width:none;-ms-overflow-style:none;}
+::-webkit-scrollbar{display:none;}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+@keyframes slideInL{from{transform:translateX(-100%)}to{transform:translateX(0)}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+@keyframes glow{0%,100%{box-shadow:0 0 0 0 rgba(37,211,102,.4)}50%{box-shadow:0 0 0 8px rgba(37,211,102,0)}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+@keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+@keyframes bannerIn{from{opacity:0;transform:translateX(-50%) translateY(20px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+
+.fu{animation:fadeUp .25s cubic-bezier(.22,.68,0,1.2) both}
+.su{animation:slideUp .32s cubic-bezier(.32,.72,0,1) both}
+.sil{animation:slideInL .3s cubic-bezier(.32,.72,0,1) both}
+.fl{animation:float 3s ease-in-out infinite}
+.pls{animation:pulse 1.5s ease-in-out infinite}
+
+.nav-btn{background:none;border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 0 6px;flex:1;-webkit-tap-highlight-color:transparent;position:relative;transition:opacity .15s;}
+.nav-btn:active{opacity:.55;}
+.bird-chip{cursor:pointer;border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;transition:transform .12s;border:2px solid transparent;-webkit-tap-highlight-color:transparent;padding:10px 4px;outline:none;width:100%;}
+.bird-chip:active{transform:scale(.88);}
+.abtn{border:none;cursor:pointer;border-radius:12px;display:flex;align-items:center;justify-content:center;gap:5px;font-family:'Cairo',sans-serif;font-weight:700;-webkit-tap-highlight-color:transparent;transition:transform .12s,opacity .12s;outline:none;}
+.abtn:active{transform:scale(.9);opacity:.8;}
+.ifield{width:100%;padding:13px 15px;border-radius:13px;border:1.5px solid #E9EDEF;font-size:15px;outline:none;font-family:'Cairo',sans-serif;background:#fff;transition:border-color .2s,box-shadow .2s;-webkit-appearance:none;box-sizing:border-box;color:#111B21;}
+.ifield:focus{border-color:#25D366;box-shadow:0 0 0 3px rgba(37,211,102,.15);}
+.ifield::placeholder{color:#8696A0;opacity:.8;}
+body.dark .ifield{background:#2A3942;border-color:#3B4A54;color:#E9EDEF;}
+body.dark .ifield:focus{border-color:#00A884;box-shadow:0 0 0 3px rgba(0,168,132,.15);}
+body.dark .ifield::placeholder{color:#667781;}
+.orow{animation:fadeUp .2s ease both;}
+.row-item{display:flex;align-items:center;padding:12px 16px;border-bottom:1px solid var(--bdr);background:var(--card);cursor:pointer;-webkit-tap-highlight-color:transparent;transition:background .15s;}
+.row-item:active{background:var(--pr6);}
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script>
+(function(){
+  if(!('serviceWorker' in navigator))return;
+  const SW=`
+    const CACHE='mawada-v6';
+    self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>fetch(self.location.href).then(r=>c.put(self.location.href,r)).catch(()=>{})));self.skipWaiting();});
+    self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k)))));self.clients.claim();});
+    self.addEventListener('fetch',e=>{if(e.request.method!=='GET')return;e.respondWith(caches.match(e.request).then(c=>{if(c)return c;return fetch(e.request).then(r=>{if(!r||r.status!==200||r.type==='opaque')return r;var cl=r.clone();caches.open(CACHE).then(cc=>cc.put(e.request,cl));return r;}).catch(()=>caches.match(self.location.href));}));});
+  `;
+  const b=new Blob([SW],{type:'application/javascript'});
+  navigator.serviceWorker.register(URL.createObjectURL(b),{scope:'./'}).catch(()=>{});
+})();
+var dP=null,iB=null;
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();dP=e;showIB();});
+window.addEventListener('appinstalled',()=>{hideIB();dP=null;});
+function showIB(){
+  if(iB)return;iB=document.createElement('div');
+  iB.innerHTML=`<div style="display:flex;align-items:center;gap:12px;direction:rtl;"><span style="font-size:30px">🐥</span><div style="flex:1"><div style="font-weight:800;font-size:14px">ثبّت التطبيق على شاشتك</div><div style="font-size:11px;color:#86EFAC">اشتغل زي تطبيق حقيقي!</div></div><button onclick="installApp()" style="background:#25D366;color:#fff;border:none;border-radius:10px;padding:10px 14px;font-size:13px;font-weight:900;cursor:pointer;font-family:Cairo,sans-serif;flex-shrink:0">تثبيت ⬇️</button><button onclick="hideIB2()" style="background:rgba(255,255,255,.15);color:#fff;border:none;border-radius:8px;padding:9px 11px;cursor:pointer;flex-shrink:0">✕</button></div>`;
+  Object.assign(iB.style,{position:'fixed',bottom:'82px',left:'50%',transform:'translateX(-50%)',width:'calc(100% - 20px)',maxWidth:'460px',background:'#075E54',color:'#fff',padding:'13px 15px',borderRadius:'16px',zIndex:'9999',fontFamily:'Cairo,sans-serif',boxShadow:'0 8px 32px rgba(0,0,0,.4)',border:'1px solid rgba(255,255,255,.15)',animation:'bannerIn .4s cubic-bezier(.32,.72,0,1) both'});
+  document.body.appendChild(iB);setTimeout(hideIB,15000);
+}
+function hideIB(){if(iB){iB.remove();iB=null;}}
+window.hideIB2=hideIB;
+window.installApp=async function(){if(!dP)return;dP.prompt();await dP.userChoice;dP=null;hideIB();};
+</script>
+
+<script>
+firebase.initializeApp({
+  apiKey:"AIzaSyAGt9o2r5_I8rMpo65-_fne1_It_M-IoS0",
+  authDomain:"elmawada-app.firebaseapp.com",
+  projectId:"elmawada-app",
+  storageBucket:"elmawada-app.firebasestorage.app",
+  messagingSenderId:"43925916414",
+  appId:"1:43925916414:web:38c0c419036be800eef3af"
+});
+const db=firebase.firestore();
+const DREF=db.collection('mawada').doc('data');
+</script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+<script type="text/babel">
+const {useState,useEffect,useCallback,useRef}=React;
+
+/* ══ BIRDS — أسماء كاملة + وحدة العد الصحيحة ══ */
+const BIRDS=[
+  {id:"broiler",  name:"فراخ تسمين بيضاء", short:"تسمين",   e:"🐔", unit:"فرخ",    bg:"#FEF9C3",brd:"#EAB308",tx:"#713F12"},
+  {id:"shafar",   name:"فراخ شفر",          short:"شفر",      e:"🐓", unit:"فرخ",    bg:"#D1FAE5",brd:"#10B981",tx:"#065F46"},
+  {id:"hybrid",   name:"فراخ هجين صافي",   short:"هجين",     e:"🐓", unit:"فرخ",    bg:"#DBEAFE",brd:"#3B82F6",tx:"#1E3A8A"},
+  {id:"baladi",   name:"فراخ بلدي مشعر",   short:"بلدي",     e:"🦃", unit:"فرخ",    bg:"#FED7AA",brd:"#F97316",tx:"#7C2D12"},
+  {id:"muscovy",  name:"بط مسكوفي",         short:"مسكوفي",   e:"🦆", unit:"بطة",    bg:"#A7F3D0",brd:"#059669",tx:"#064E3B"},
+  {id:"baghl",    name:"بط بغال",           short:"بغال",     e:"🦢", unit:"بطة",    bg:"#E0F2FE",brd:"#0EA5E9",tx:"#0C4A6E"},
+  {id:"sharifan", name:"بط شريفان",         short:"شريفان",   e:"🦅", unit:"بطة",    bg:"#FCE7F3",brd:"#EC4899",tx:"#831843"},
+  {id:"faransawi",name:"بط فرنساوي",        short:"فرنساوي",  e:"🦆", unit:"بطة",    bg:"#EDE9FE",brd:"#8B5CF6",tx:"#4C1D95"},
+  {id:"quail",    name:"سمان",              short:"سمان",     e:"🐦", unit:"سمانة",  bg:"#FEF3C7",brd:"#D97706",tx:"#92400E"},
+];
+const gb=id=>BIRDS.find(b=>b.id===id)||{name:id,short:id,e:"🐦",unit:"طير",bg:"#F3F4F6",brd:"#9CA3AF",tx:"#374151"};
+
+/* ══ HELPERS ══ */
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+const today=()=>new Date().toISOString().slice(0,10);
+const now=today;
+const dSince=d=>!d?0:Math.floor((Date.now()-new Date(d).getTime())/86400000);
+const fmtL=iso=>!iso?"—":new Date(iso).toLocaleDateString("ar-EG",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
+const fmtS=iso=>!iso?"بدون تاريخ":new Date(iso).toLocaleDateString("ar-EG",{weekday:"short",day:"numeric",month:"numeric"});
+const fmt=n=>Number(n||0).toLocaleString("ar-EG");
+const sugDates=()=>{const r=[];const d=new Date();for(let i=1;i<=21&&r.length<6;i++){d.setDate(d.getDate()+1);if([0,3].includes(d.getDay()))r.push(new Date(d).toISOString().slice(0,10));}return r;};
+
+/* ══ STORAGE ══ */
+const SKEY="mawada_v6";
+const saveLocal=d=>{try{localStorage.setItem(SKEY,JSON.stringify(d));}catch{}};
+const loadLocal=()=>{try{const r=localStorage.getItem(SKEY);return r?JSON.parse(r):null;}catch{return null;}};
+const saveCloud=(d,onState)=>{
+  saveLocal(d);
+  if(onState)onState("saving");
+  DREF.set(d).then(()=>{if(onState){onState("saved");setTimeout(()=>onState("ok"),2000);}}).catch(()=>{if(onState)onState("offline");});
+};
+const loadCloud=async()=>{
+  try{const doc=await DREF.get();if(doc.exists){const d=doc.data();saveLocal(d);return d;}}catch{}
+  return loadLocal();
+};
+
+/* ══ DAILY PRICE RESET ══ */
+const checkPriceReset=(data)=>{
+  if(!data)return data;
+  const t=today();
+  if(data.priceDate!==t){
+    return{...data,prices:{},priceDate:t};
+  }
+  return data;
+};
+
+/* ══ COLORS — واتساب ══ */
+const LIGHT={
+  bg:"#ECE5DD",card:"#FFFFFF",
+  nav:"#075E54",navTxt:"#FFFFFF",navActiveTxt:"#25D366",navInactiveTxt:"rgba(255,255,255,.6)",
+  pr:"#075E54",pr2:"#128C7E",pr3:"#25D366",pr4:"#DCF8C6",pr5:"#ECE5DD",pr6:"#F0FAF4",
+  txt:"#111B21",sub:"#3B4A54",muted:"#667781",
+  bdr:"#E9EDEF",bdr2:"#D1D7DB",
+  red:"#DC2626",redL:"#FFF0F0",
+  grn:"#25D366",grnL:"#DCF8C6",
+  hdrBg:"#075E54",
+  cardShadow:"0 1px 3px rgba(0,0,0,.08)",
+  cardBdr:"rgba(0,0,0,.06)",
+  navShadow:"0 -2px 10px rgba(0,0,0,.12)",
+  bnrGrad:"linear-gradient(135deg,#075E54,#128C7E)",
+};
+const DARK={
+  bg:"#0B141A",card:"#1F2C34",
+  nav:"#1F2C34",navTxt:"#E9EDEF",navActiveTxt:"#00A884",navInactiveTxt:"#8696A0",
+  pr:"#00A884",pr2:"#02A676",pr3:"#25D366",pr4:"#0D2B22",pr5:"#1F2C34",pr6:"#1A2530",
+  txt:"#E9EDEF",sub:"#8696A0",muted:"#667781",
+  bdr:"#2A3942",bdr2:"#3B4A54",
+  red:"#F15C6D",redL:"#1C0A0A",
+  grn:"#00A884",grnL:"#0D2B22",
+  hdrBg:"#1F2C34",
+  cardShadow:"0 1px 4px rgba(0,0,0,.3)",
+  cardBdr:"rgba(255,255,255,.04)",
+  navShadow:"0 -2px 10px rgba(0,0,0,.4)",
+  bnrGrad:"linear-gradient(135deg,#1F2C34,#2A3942)",
+};
+let C={...LIGHT};
+
+/* ══ MICRO ══ */
+const FL=({ch,req})=><div style={{fontSize:13,fontWeight:700,color:C.sub,marginBottom:6}}>{ch}{req&&<span style={{color:C.red}}> *</span>}</div>;
+const Dvd=({m="0 16px"})=><div style={{height:1,background:C.bdr,margin:`0 ${m}`}}/>;
+const Card=({children,style={}})=>(
+  <div style={{background:C.card,borderRadius:16,padding:16,boxShadow:C.cardShadow,border:`1px solid ${C.cardBdr}`,...style}}>
+    {children}
+  </div>
+);
+const InfoRow=({ico,label,val,valStyle={}})=>(
+  <div style={{display:"flex",alignItems:"center",gap:10,padding:"11px 0",borderBottom:`1px solid ${C.bdr}`}}>
+    <span style={{fontSize:18,width:24,textAlign:"center",flexShrink:0}}>{ico}</span>
+    <span style={{fontSize:13,color:C.muted,flexShrink:0}}>{label}</span>
+    <span style={{fontSize:14,fontWeight:700,color:C.txt,marginRight:"auto",...valStyle}}>{val}</span>
+  </div>
+);
+
+/* ══ BIRD GRID ══ */
+const BirdGrid=({sel,onSel})=>(
+  <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8}}>
+    {BIRDS.map(b=>{const s=sel===b.id;return(
+      <button key={b.id} className="bird-chip" onClick={()=>onSel(b.id)}
+        style={{background:s?b.brd:b.bg,borderColor:s?b.brd:`${b.brd}44`,boxShadow:s?`0 4px 14px ${b.brd}55`:"0 1px 4px rgba(0,0,0,.07)"}}>
+        <span style={{fontSize:28}}>{b.e}</span>
+        <span style={{fontSize:9,fontWeight:700,color:s?"#fff":b.tx,textAlign:"center",lineHeight:1.35,wordBreak:"keep-all"}}>{b.name}</span>
+      </button>
+    );})}
+  </div>
+);
+
+/* ══ BOOKING SHEET ══ */
+const BookSheet=({onClose,onSave,edit=null,prices={}})=>{
+  const [bid,setBid]=useState(edit?.birdId||"");
+  const [name,setName]=useState(edit?.custName||"");
+  const [phone,setPhone]=useState(edit?.phone||"");
+  const [qty,setQty]=useState(edit?.qty?String(edit.qty):"");
+  const [dep,setDep]=useState(edit?.deposit?String(edit.deposit):"");
+  const [dd,setDd]=useState(edit?.delivDate||"");
+  const [notes,setNotes]=useState(edit?.notes||"");
+  const [err,setErr]=useState("");
+  const [step,setStep]=useState(1);
+  const sug=sugDates();
+  const unitP=bid&&prices[bid]?Number(prices[bid]):0;
+  const total=unitP&&qty?unitP*Number(qty):0;
+  const b=gb(bid);
+
+  const next=()=>{
+    if(!bid){setErr("اختر نوع الطير");return;}
+    if(!name.trim()){setErr("اكتب اسم العميل");return;}
+    if(!qty||+qty<=0){setErr("اكتب الكمية");return;}
+    setErr("");setStep(2);
+  };
+  const doSave=()=>onSave({
+    id:edit?.id||uid(),custName:name.trim(),phone:phone.trim(),
+    birdId:bid,qty:+qty,deposit:+dep||0,delivDate:dd,
+    notes:notes.trim(),status:"pending",
+    createdAt:edit?.createdAt||now(),fus:edit?.fus||[]
+  });
+
+  return(
+    <div style={{position:"fixed",inset:0,zIndex:300,background:"rgba(0,0,0,.7)",backdropFilter:"blur(6px)",display:"flex",alignItems:"flex-end",justifyContent:"center"}} onClick={onClose}>
+      <div className="su" onClick={e=>e.stopPropagation()}
+        style={{width:"100%",maxWidth:480,background:C.card,borderRadius:"22px 22px 0 0",maxHeight:"93vh",overflowY:"auto",paddingBottom:32,border:`1px solid ${C.cardBdr}`,borderBottom:"none"}}>
+        <div style={{display:"flex",justifyContent:"center",padding:"12px 0 6px"}}>
+          <div style={{width:40,height:4,background:C.bdr2,borderRadius:99}}/>
+        </div>
+        <div style={{padding:"4px 20px 10px",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+          <div>
+            <div style={{fontSize:20,fontWeight:900,color:C.pr}}>{edit?"✏️ تعديل الحجز":"🐥 حجز جديد"}</div>
+            <div style={{fontSize:11,color:C.muted,marginTop:1}}>الخطوة {step} من 2</div>
+          </div>
+          {step===2&&<button onClick={()=>setStep(1)} className="abtn" style={{background:C.pr6,color:C.pr,padding:"8px 14px",fontSize:13,border:`1px solid ${C.bdr}`}}>← رجوع</button>}
+        </div>
+        <div style={{height:3,background:C.bdr,margin:"0 20px 16px",borderRadius:99}}>
+          <div style={{height:"100%",width:step===1?"50%":"100%",background:C.pr3,borderRadius:99,transition:"width .3s"}}/>
+        </div>
+        <div style={{padding:"0 20px"}}>
+          {step===1&&<div className="fu">
+            <FL ch="🐥 اختر نوع الطير" req/>
+            <BirdGrid sel={bid} onSel={setBid}/>
+            <div style={{height:14}}/>
+            <FL ch="👤 اسم العميل" req/>
+            <input className="ifield" value={name} onChange={e=>setName(e.target.value)} placeholder="مثال: محمد أحمد" style={{marginBottom:11}}/>
+            <FL ch="📱 رقم التليفون (اختياري)"/>
+            <input className="ifield" type="tel" value={phone} onChange={e=>setPhone(e.target.value)} placeholder="01xxxxxxxxx" inputMode="tel" style={{marginBottom:11}}/>
+            <FL ch="🔢 الكمية" req/>
+            <input className="ifield" type="number" value={qty} onChange={e=>setQty(e.target.value)} placeholder="مثال: 100" inputMode="numeric" style={{marginBottom:8}}/>
+            {unitP>0&&qty>0&&(
+              <div style={{background:C.grnL,border:`1px solid ${C.grn}33`,borderRadius:12,padding:"9px 13px",marginBottom:10,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                <span style={{fontSize:13,color:C.sub}}>💰 {fmt(unitP)} ج × {qty}</span>
+                <span style={{fontSize:18,fontWeight:900,color:C.pr}}>{fmt(total)} ج</span>
+              </div>
+            )}
+            {err&&<div style={{background:C.redL,color:C.red,padding:"9px 13px",borderRadius:11,fontSize:13,fontWeight:700,marginBottom:10}}>⚠️ {err}</div>}
+            <button className="abtn" onClick={next} style={{width:"100%",background:C.pr,color:"#fff",padding:"15px",fontSize:15,borderRadius:13,boxShadow:`0 4px 16px ${C.pr}55`,marginBottom:2}}>
+              التالي ← التفاصيل
+            </button>
+          </div>}
+          {step===2&&<div className="fu">
+            <div style={{background:bid?b.bg:C.pr6,border:`1.5px solid ${b.brd}44`,borderRadius:14,padding:"12px 15px",marginBottom:14,display:"flex",gap:11,alignItems:"center"}}>
+              <span style={{fontSize:30}}>{b.e}</span>
+              <div>
+                <div style={{fontWeight:900,fontSize:15,color:b.tx}}>{name||"—"}</div>
+                <div style={{fontSize:12,color:C.sub}}>{b.name} — {fmt(qty)} {b.unit}</div>
+                {phone&&<div style={{fontSize:11,color:C.muted}}>📱 {phone}</div>}
+                {total>0&&<div style={{fontSize:12,fontWeight:800,color:C.pr}}>💰 {fmt(total)} ج</div>}
+              </div>
+            </div>
+            <FL ch="📅 يوم الاستلام"/>
+            <div style={{display:"flex",gap:6,overflowX:"auto",paddingBottom:7,marginBottom:8}}>
+              {sug.map(d=><button key={d} onClick={()=>setDd(d)} className="abtn"
+                style={{flexShrink:0,padding:"8px 12px",fontSize:11,background:dd===d?C.pr:C.pr6,color:dd===d?"#fff":C.pr,border:`1px solid ${dd===d?C.pr:C.bdr}`}}>
+                {fmtS(d)}
+              </button>)}
+            </div>
+            <input type="date" className="ifield" value={dd} onChange={e=>setDd(e.target.value)} style={{marginBottom:4}}/>
+            <div style={{fontSize:11,color:C.muted,marginBottom:13}}>💡 التسليم عادةً الأحد أو الأربعاء</div>
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:11}}>
+              <div><FL ch="🤝 العربون (ج)"/><input className="ifield" type="number" value={dep} onChange={e=>setDep(e.target.value)} placeholder="0" inputMode="numeric"/></div>
+              <div><FL ch="💰 الإجمالي (ج)"/><input className="ifield" readOnly value={total>0?String(total):""} placeholder="تلقائي" style={{background:total>0?C.grnL:C.card,fontWeight:700,cursor:"default"}}/></div>
+            </div>
+            <FL ch="📝 ملاحظات"/>
+            <textarea className="ifield" value={notes} onChange={e=>setNotes(e.target.value)} placeholder="أي ملاحظات..." rows={2} style={{resize:"none",marginBottom:18}}/>
+            <button className="abtn" onClick={doSave} style={{width:"100%",background:C.pr,color:"#fff",padding:"16px",fontSize:16,fontWeight:900,borderRadius:14,boxShadow:`0 4px 18px ${C.pr}55`}}>
+              💾 حفظ الحجز
+            </button>
+          </div>}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+/* ══ CUSTOMER PROFILE — صفحة العميل الكاملة ══ */
+const CustomerProfile=({order,onClose,onDelete,onEdit,onDeliver,prices})=>{
+  const b=gb(order.birdId);
+  const unitP=prices[order.birdId]?Number(prices[order.birdId]):0;
+  const total=unitP*Number(order.qty||0);
+  const balance=total>0?total-Number(order.deposit||0):0;
+
+  const sendReceipt=()=>{
+    if(!order.phone){alert("لا يوجد رقم تليفون لهذا العميل");return;}
+    const p=order.phone.replace(/[^0-9]/g,"");
+    const ip=p.startsWith("0")?"2"+p:p.startsWith("2")?p:"2"+p;
+    const d=order.delivDate?fmtL(order.delivDate):"لم يُحدد";
+    let msg=`🧾 *وصل حجز — مجموعة المودة*\n`;
+    msg+=`${"━".repeat(26)}\n`;
+    msg+=`👤 *الاسم:* ${order.custName}\n`;
+    if(order.phone)msg+=`📱 *التليفون:* ${order.phone}\n`;
+    msg+=`${b.e} *الطير:* ${b.name}\n`;
+    msg+=`🔢 *الكمية:* ${fmt(order.qty)} ${b.unit}\n`;
+    msg+=`📅 *التسليم:* ${d}\n`;
+    if(total>0){
+      msg+=`💰 *إجمالي الحجز:* ${fmt(total)} جنيه\n`;
+      if(order.deposit>0){
+        msg+=`🤝 *العربون المدفوع:* ${fmt(order.deposit)} جنيه\n`;
+        msg+=`💳 *المتبقي:* ${fmt(balance)} جنيه\n`;
+      }
+    }
+    if(order.notes)msg+=`📝 *ملاحظات:* ${order.notes}\n`;
+    msg+=`${"━".repeat(26)}\n`;
+    msg+=`شكراً لثقتكم 🙏\n*مجموعة المودة*`;
+    window.open(`https://wa.me/${ip}?text=${encodeURIComponent(msg)}`,"_blank");
+  };
+
+  const doDelete=()=>{
+    if(window.confirm(`هل تريد حذف حجز ${order.custName} نهائياً؟`)){
+      onDelete(order.id);
+      onClose();
+    }
+  };
+
+  return(
+    <div style={{position:"fixed",inset:0,zIndex:200,background:C.bg,display:"flex",flexDirection:"column",maxWidth:480,margin:"0 auto"}}>
+      {/* Header */}
+      <div style={{background:C.hdrBg,padding:"14px 16px 12px",display:"flex",alignItems:"center",gap:12,flexShrink:0}}>
+        <button onClick={onClose} className="abtn" style={{background:"none",color:"#fff",fontSize:22,width:36,height:36,borderRadius:"50%",flexShrink:0}}>
+          ←
+        </button>
+        <div style={{width:42,height:42,borderRadius:"50%",background:b.bg,border:`2px solid ${b.brd}55`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontSize:22}}>
+          {b.e}
+        </div>
+        <div style={{flex:1,minWidth:0}}>
+          <div style={{color:"#fff",fontWeight:800,fontSize:17,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{order.custName}</div>
+          <div style={{color:"rgba(255,255,255,.65)",fontSize:11}}>{b.name}</div>
+        </div>
+        {order.phone&&(
+          <a href={`tel:${order.phone}`} className="abtn" style={{background:"rgba(255,255,255,.15)",color:"#fff",width:38,height:38,borderRadius:"50%",fontSize:18,textDecoration:"none",flexShrink:0}}>📞</a>
+        )}
+      </div>
+
+      {/* Content */}
+      <div style={{flex:1,overflowY:"auto",padding:14}}>
+        {/* Order info card */}
+        <Card style={{marginBottom:12}}>
+          <div style={{fontWeight:800,fontSize:14,color:C.pr,marginBottom:10}}>📋 تفاصيل الحجز</div>
+          <InfoRow ico={b.e} label="الطير" val={b.name}/>
+          <InfoRow ico="🔢" label="الكمية" val={`${fmt(order.qty)} ${b.unit}`} valStyle={{color:C.pr,fontSize:16}}/>
+          {order.phone&&<InfoRow ico="📱" label="التليفون" val={order.phone}/>}
+          {order.delivDate&&<InfoRow ico="📅" label="يوم التسليم" val={fmtS(order.delivDate)}/>}
+          {total>0&&<InfoRow ico="💰" label="الإجمالي" val={`${fmt(total)} ج`} valStyle={{color:C.pr,fontWeight:900}}/>}
+          {order.deposit>0&&<InfoRow ico="🤝" label="العربون" val={`${fmt(order.deposit)} ج`}/>}
+          {balance>0&&total>0&&<InfoRow ico="💳" label="المتبقي" val={`${fmt(balance)} ج`} valStyle={{color:C.red,fontWeight:900}}/>}
+          {order.notes&&(
+            <div style={{marginTop:10,padding:"9px 12px",background:C.pr6,borderRadius:10,fontSize:13,color:C.sub,border:`1px solid ${C.bdr}`}}>
+              📝 {order.notes}
+            </div>
+          )}
+          {/* Remove bottom border from last InfoRow */}
+        </Card>
+
+        {/* Follow-up history */}
+        {order.fus?.length>0&&(
+          <Card style={{marginBottom:12}}>
+            <div style={{fontWeight:800,fontSize:14,color:C.pr,marginBottom:10}}>📞 سجل المتابعات</div>
+            {order.fus.map((f,i)=>(
+              <div key={i} style={{display:"flex",gap:10,padding:"8px 0",borderBottom:i<order.fus.length-1?`1px dashed ${C.bdr}`:"none"}}>
+                <span style={{fontSize:10,color:C.muted,flexShrink:0,paddingTop:2}}>{fmtS(f.date)}</span>
+                <span style={{fontSize:13,color:C.txt}}>{f.note}</span>
+              </div>
+            ))}
+          </Card>
+        )}
+
+        {/* Status info */}
+        <Card style={{marginBottom:12,background:order.status==="active"?C.grnL:order.status==="done"?C.bg:C.card}}>
+          <div style={{display:"flex",alignItems:"center",gap:10}}>
+            <span style={{fontSize:22}}>{order.status==="pending"?"⏳":order.status==="active"?"✅":"🏁"}</span>
+            <div>
+              <div style={{fontWeight:700,fontSize:14,color:order.status==="pending"?C.pr:order.status==="active"?C.grn:C.muted}}>
+                {order.status==="pending"?"في الانتظار":order.status==="active"?"تم الاستلام — قيد المتابعة":"منتهي"}
+              </div>
+              <div style={{fontSize:11,color:C.muted}}>تاريخ التسجيل: {fmtS(order.createdAt)}</div>
+            </div>
+          </div>
+        </Card>
+
+        {/* Action buttons */}
+        <div style={{display:"flex",flexDirection:"column",gap:10}}>
+          {order.status==="pending"&&(
+            <button className="abtn" onClick={()=>{onDeliver(order.id);onClose();}}
+              style={{width:"100%",background:C.grn,color:"#fff",padding:"15px",fontSize:15,borderRadius:13,boxShadow:`0 4px 16px ${C.grn}44`}}>
+              ✅ تأكيد الاستلام — نقل للمتابعة
+            </button>
+          )}
+          {order.phone&&(
+            <button className="abtn" onClick={sendReceipt}
+              style={{width:"100%",background:"linear-gradient(135deg,#25D366,#128C7E)",color:"#fff",padding:"14px",fontSize:14,borderRadius:13}}>
+              📲 إرسال وصل الواتساب
+            </button>
+          )}
+          <button className="abtn" onClick={()=>{onEdit(order);onClose();}}
+            style={{width:"100%",background:C.pr6,color:C.pr,padding:"13px",fontSize:14,borderRadius:13,border:`1px solid ${C.bdr}`}}>
+            ✏️ تعديل الحجز
+          </button>
+          <button className="abtn" onClick={doDelete}
+            style={{width:"100%",background:C.redL,color:C.red,padding:"13px",fontSize:14,borderRadius:13,border:`1px solid ${C.red}22`}}>
+            🗑️ حذف الحجز نهائياً
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+/* ══ FU SHEET ══ */
+const FuSheet=({order,onClose,onSave})=>{
+  const [note,setNote]=useState("");const b=gb(order.birdId);
+  return(
+    <div style={{position:"fixed",inset:0,zIndex:300,background:"rgba(0,0,0,.7)",backdropFilter:"blur(6px)",display:"flex",alignItems:"flex-end",justifyContent:"center"}} onClick={onClose}>
+      <div className="su" onClick={e=>e.stopPropagation()}
+        style={{width:"100%",maxWidth:480,background:C.card,borderRadius:"22px 22px 0 0",padding:"14px 20px 32px",border:`1px solid ${C.cardBdr}`,borderBottom:"none"}}>
+        <div style={{display:"flex",justifyContent:"center",marginBottom:12}}><div style={{width:40,height:4,background:C.bdr2,borderRadius:99}}/></div>
+        <div style={{fontSize:19,fontWeight:900,color:C.pr,marginBottom:12}}>📞 تسجيل متابعة</div>
+        <div style={{background:b.bg,border:`1.5px solid ${b.brd}33`,borderRadius:12,padding:"10px 14px",marginBottom:14,display:"flex",gap:10,alignItems:"center"}}>
+          <span style={{fontSize:24}}>{b.e}</span>
+          <div>
+            <div style={{fontWeight:800,fontSize:14,color:b.tx}}>{order.custName}</div>
+            <div style={{fontSize:11,color:C.sub}}>{b.name} — {fmt(order.qty)} {b.unit}</div>
+          </div>
+        </div>
+        <FL ch="ملاحظات المتابعة"/>
+        <textarea className="ifield" value={note} onChange={e=>setNote(e.target.value)} rows={3} placeholder="الطير بخير — وزنه ممتاز" style={{resize:"none",marginBottom:14}}/>
+        <button className="abtn" onClick={()=>onSave(order.id,note.trim()||"تم التواصل")}
+          style={{width:"100%",background:C.pr,color:"#fff",padding:"15px",fontSize:15,borderRadius:13,boxShadow:`0 4px 14px ${C.pr}44`}}>
+          ✅ حفظ المتابعة
+        </button>
+      </div>
+    </div>
+  );
+};
+
+/* ══ HOME TAB — قائمة نظيفة فقط ══ */
+const HomeTab=({orders,onDeliver,onDelete,onViewCustomer,onEdit,prices})=>{
+  const pending=orders.filter(o=>o.status==="pending");
+  if(pending.length===0)return(
+    <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"60px 28px",textAlign:"center",minHeight:"60vh"}}>
+      <div className="fl" style={{fontSize:88,marginBottom:14,filter:"drop-shadow(0 8px 20px rgba(37,211,102,.25))"}}>🐥</div>
+      <div style={{fontSize:21,fontWeight:900,color:C.pr,marginBottom:8}}>لا يوجد حجوزات</div>
+      <div style={{fontSize:14,color:C.muted,lineHeight:1.9}}>اضغط زر <b style={{color:C.grn}}>➕</b> في الأسفل لإضافة حجز جديد</div>
+    </div>
+  );
+
+  // Group by delivery date
+  const G={};
+  pending.forEach(o=>{const k=o.delivDate||"__x__";if(!G[k])G[k]=[];G[k].push(o);});
+  const keys=Object.keys(G).sort((a,b)=>a==="__x__"?1:b==="__x__"?-1:a.localeCompare(b));
+
+  // Summary
+  const grand={};pending.forEach(o=>{grand[o.birdId]=(grand[o.birdId]||0)+Number(o.qty||0);});
+  const grandVal=pending.reduce((s,o)=>{const p=prices[o.birdId]?Number(prices[o.birdId]):0;return s+p*Number(o.qty||0);},0);
+
+  return(
+    <div style={{paddingBottom:8}}>
+      {/* Summary */}
+      <div style={{margin:"12px 12px 10px",background:C.bnrGrad,borderRadius:18,padding:"16px 18px",boxShadow:`0 6px 20px ${C.pr}33`}}>
+        <div style={{fontSize:11,color:"rgba(255,255,255,.65)",marginBottom:8,fontWeight:600}}>📦 إجمالي الحجوزات المعلقة</div>
+        <div style={{display:"flex",flexWrap:"wrap",gap:7,marginBottom:grandVal>0?10:0}}>
+          {Object.entries(grand).map(([id,n])=>{const b=gb(id);return(
+            <div key={id} style={{background:"rgba(255,255,255,.15)",border:"1px solid rgba(255,255,255,.2)",borderRadius:11,padding:"6px 11px",display:"flex",alignItems:"center",gap:6}}>
+              <span style={{fontSize:18}}>{b.e}</span>
+              <div>
+                <div style={{fontSize:20,fontWeight:900,color:"#fff",lineHeight:1}}>{fmt(n)}</div>
+                <div style={{fontSize:9,color:"rgba(255,255,255,.6)"}}>{b.short}</div>
+              </div>
+            </div>
+          );})}
+        </div>
+        {grandVal>0&&(
+          <div style={{background:"rgba(255,255,255,.14)",borderRadius:10,padding:"8px 13px",display:"flex",justifyContent:"space-between",alignItems:"center",border:"1px solid rgba(255,255,255,.18)"}}>
+            <span style={{fontSize:12,color:"rgba(255,255,255,.8)",fontWeight:600}}>💰 الإجمالي المتوقع</span>
+            <span style={{fontSize:19,fontWeight:900,color:"#fff"}}>{fmt(grandVal)} ج</span>
+          </div>
+        )}
+      </div>
+
+      {/* Grouped list */}
+      {keys.map(dk=>{
+        const go=G[dk];const nd=dk==="__x__";
+        const tally={};go.forEach(o=>{tally[o.birdId]=(tally[o.birdId]||0)+Number(o.qty||0);});
+        return(
+          <div key={dk} style={{marginBottom:8}}>
+            {/* Date header */}
+            <div style={{background:C.bnrGrad,padding:"10px 16px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+              <span style={{fontSize:14,fontWeight:900,color:"#fff"}}>{nd?"📋 بدون تاريخ":`📅 ${fmtS(dk)}`}</span>
+              <div style={{display:"flex",gap:5,flexWrap:"wrap"}}>
+                {Object.entries(tally).map(([id,n])=>{const b=gb(id);return(
+                  <span key={id} style={{background:"rgba(255,255,255,.18)",borderRadius:20,padding:"2px 9px",fontSize:10,fontWeight:700,color:"#fff"}}>
+                    {b.e} {fmt(n)} {b.short}
+                  </span>
+                );})}
+              </div>
+            </div>
+
+            {/* Customer rows — clean */}
+            {go.map((o,i)=>{
+              const b=gb(o.birdId);
+              return(
+                <div key={o.id} className="orow" style={{background:C.card,display:"flex",alignItems:"center",padding:"13px 14px",borderBottom:`1px solid ${C.bdr}`}}>
+                  {/* Bird icon */}
+                  <div style={{width:44,height:44,borderRadius:"50%",background:b.bg,border:`2px solid ${b.brd}44`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,marginLeft:11,fontSize:22}}>
+                    {b.e}
+                  </div>
+                  {/* Name + qty — tap to open profile */}
+                  <div style={{flex:1,minWidth:0,cursor:"pointer"}} onClick={()=>onViewCustomer(o)}>
+                    <div style={{fontWeight:800,fontSize:15,color:C.txt,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{o.custName}</div>
+                    <div style={{fontSize:12,color:C.muted,marginTop:1}}>
+                      <span style={{color:b.tx,fontWeight:700}}>{fmt(o.qty)} {b.short}</span>
+                      {o.deposit>0&&<span style={{marginRight:6,color:C.grn}}>• عربون: {fmt(o.deposit)}ج</span>}
+                    </div>
+                  </div>
+                  {/* Actions */}
+                  <div style={{display:"flex",gap:7,flexShrink:0}}>
+                    {o.phone?(
+                      <a href={`tel:${o.phone}`} className="abtn"
+                        style={{background:C.grn,color:"#fff",width:38,height:38,borderRadius:"50%",fontSize:17,textDecoration:"none"}}>📞</a>
+                    ):(
+                      <div style={{width:38,height:38,borderRadius:"50%",background:C.bdr,display:"flex",alignItems:"center",justifyContent:"center",fontSize:15}}>📵</div>
+                    )}
+                    <button className="abtn" onClick={()=>onDeliver(o.id)}
+                      style={{background:C.grnL,color:C.grn,padding:"6px 11px",fontSize:11,border:`1.5px solid ${C.grn}44`,borderRadius:20,fontWeight:700,whiteSpace:"nowrap"}}>
+                      ✅ استلم
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        );
+      })}
+    </div>
+  );
+};
+
+/* ══ STATS TAB ══ */
+const StatsTab=({orders,prices})=>{
+  const all=orders.filter(o=>o.status!=="cancelled");
+  const done=orders.filter(o=>o.status==="done"||o.status==="active");
+  const tally={};all.forEach(o=>{tally[o.birdId]=(tally[o.birdId]||0)+Number(o.qty||0);});
+  const sorted=Object.entries(tally).sort((a,b)=>b[1]-a[1]);
+  const maxQty=sorted[0]?sorted[0][1]:1;
+  const totalRev=done.reduce((s,o)=>{const p=prices[o.birdId]?Number(prices[o.birdId]):0;return s+p*Number(o.qty||0);},0);
+  const pendingRev=orders.filter(o=>o.status==="pending").reduce((s,o)=>{const p=prices[o.birdId]?Number(prices[o.birdId]):0;return s+p*Number(o.qty||0);},0);
+  const totalDeposits=all.reduce((s,o)=>s+Number(o.deposit||0),0);
+  const totalBirds=all.reduce((s,o)=>s+Number(o.qty||0),0);
+  const monthly={};all.forEach(o=>{const m=o.createdAt?.slice(0,7)||"unknown";if(!monthly[m])monthly[m]={qty:0,rev:0};monthly[m].qty+=Number(o.qty||0);const p=prices[o.birdId]?Number(prices[o.birdId]):0;monthly[m].rev+=p*Number(o.qty||0);});
+  const monthSorted=Object.entries(monthly).sort((a,b)=>b[0].localeCompare(a[0])).slice(0,4);
+  const fmtMonth=m=>{if(!m||m==="unknown")return"—";const[y,mo]=m.split("-");return new Date(+y,+mo-1,1).toLocaleDateString("ar-EG",{month:"long",year:"numeric"});};
+  if(all.length===0)return(
+    <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"60px 24px",textAlign:"center"}}>
+      <div style={{fontSize:68,marginBottom:14}}>📊</div>
+      <div style={{fontSize:18,fontWeight:800,color:C.pr}}>لا توجد بيانات بعد</div>
+    </div>
+  );
+  return(
+    <div style={{padding:14,paddingBottom:20}}>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:9,marginBottom:12}}>
+        {[
+          {ico:"💰",lbl:"الإيراد المحقق",val:`${fmt(totalRev)} ج`,bg:"linear-gradient(135deg,#075E54,#128C7E)"},
+          {ico:"⏳",lbl:"الإيراد المتوقع",val:`${fmt(pendingRev)} ج`,bg:"linear-gradient(135deg,#0EA5E9,#0284C7)"},
+          {ico:"🤝",lbl:"إجمالي العربونات",val:`${fmt(totalDeposits)} ج`,bg:"linear-gradient(135deg,#10B981,#059669)"},
+          {ico:"🐥",lbl:"إجمالي الطيور",val:`${fmt(totalBirds)} طير`,bg:"linear-gradient(135deg,#8B5CF6,#7C3AED)"},
+        ].map((c,i)=>(
+          <div key={i} style={{background:c.bg,borderRadius:16,padding:"15px 13px",boxShadow:"0 4px 14px rgba(0,0,0,.15)"}}>
+            <div style={{fontSize:26,marginBottom:6}}>{c.ico}</div>
+            <div style={{fontSize:17,fontWeight:900,color:"#fff",lineHeight:1.1}}>{c.val}</div>
+            <div style={{fontSize:10,color:"rgba(255,255,255,.7)",marginTop:4}}>{c.lbl}</div>
+          </div>
+        ))}
+      </div>
+      <Card style={{marginBottom:12}}>
+        <div style={{fontWeight:800,fontSize:14,color:C.pr,marginBottom:13}}>🏆 الأصناف الأكثر مبيعاً</div>
+        {sorted.map(([id,qty],i)=>{
+          const b=gb(id);const pct=Math.round(qty/maxQty*100);
+          const medals=["🥇","🥈","🥉"];
+          return(
+            <div key={id} style={{marginBottom:i<sorted.length-1?13:0}}>
+              <div style={{display:"flex",alignItems:"center",gap:9,marginBottom:6}}>
+                <span style={{fontSize:18,flexShrink:0}}>{i<3?medals[i]:`${i+1}.`}</span>
+                <span style={{fontSize:20}}>{b.e}</span>
+                <div style={{flex:1}}><div style={{fontWeight:700,fontSize:12,color:C.txt}}>{b.name}</div><div style={{fontSize:10,color:C.muted}}>{fmt(qty)} {b.unit}</div></div>
+                <span style={{fontWeight:900,fontSize:14,color:b.brd}}>{pct}%</span>
+              </div>
+              <div style={{height:6,background:C.pr6,borderRadius:99,overflow:"hidden"}}>
+                <div style={{height:"100%",width:`${pct}%`,background:b.brd,borderRadius:99}}/>
+              </div>
+            </div>
+          );
+        })}
+      </Card>
+      {monthSorted.length>0&&(
+        <Card style={{marginBottom:12}}>
+          <div style={{fontWeight:800,fontSize:14,color:C.pr,marginBottom:12}}>📅 إحصائيات شهرية</div>
+          {monthSorted.map(([m,data],i)=>(
+            <div key={m} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"10px 0",borderBottom:i<monthSorted.length-1?`1px dashed ${C.bdr}`:"none"}}>
+              <div><div style={{fontWeight:700,fontSize:13,color:C.txt}}>{fmtMonth(m)}</div><div style={{fontSize:11,color:C.muted}}>{fmt(data.qty)} طير</div></div>
+              {data.rev>0&&<div style={{fontWeight:900,fontSize:14,color:C.pr}}>{fmt(data.rev)} ج</div>}
+            </div>
+          ))}
+        </Card>
+      )}
+      <Card>
+        <div style={{fontWeight:800,fontSize:14,color:C.pr,marginBottom:10}}>📋 ملخص الحجوزات</div>
+        {[
+          ["⏳ معلقة",orders.filter(o=>o.status==="pending").length,C.pr2],
+          ["✅ تم الاستلام",orders.filter(o=>o.status==="active").length,C.grn],
+          ["🏁 منتهية",orders.filter(o=>o.status==="done").length,C.muted],
+          ["📊 الإجمالي",all.length,C.pr],
+        ].map(([l,n,co],i)=>(
+          <div key={i} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"8px 0",borderBottom:i<3?`1px dashed ${C.bdr}`:"none"}}>
+            <span style={{fontSize:13,color:C.sub}}>{l}</span>
+            <span style={{fontSize:20,fontWeight:900,color:co}}>{n}</span>
+          </div>
+        ))}
+      </Card>
+    </div>
+  );
+};
+
+/* ══ PRICES TAB — يومية تتجدد كل يوم ══ */
+const PricesTab=({prices,onSave})=>{
+  const [vals,setVals]=useState(()=>{const v={};BIRDS.forEach(b=>{v[b.id]=prices[b.id]||"";});return v;});
+  const [saved,setSaved]=useState(false);
+  useEffect(()=>{const v={};BIRDS.forEach(b=>{v[b.id]=prices[b.id]||"";});setVals(v);},[prices]);
+  const save=()=>{onSave(vals);setSaved(true);setTimeout(()=>setSaved(false),2500);};
+  return(
+    <div style={{padding:14}}>
+      <div style={{background:C.bnrGrad,borderRadius:18,padding:"17px 18px",marginBottom:14,color:"#fff",boxShadow:`0 6px 18px ${C.pr}33`}}>
+        <div style={{fontSize:19,fontWeight:900,marginBottom:4}}>💰 أسعار اليوم</div>
+        <div style={{fontSize:12,opacity:.85,lineHeight:1.8}}>الأسعار يومية — تتجدد تلقائياً كل يوم جديد ✨</div>
+        <div style={{marginTop:8,background:"rgba(255,255,255,.15)",borderRadius:9,padding:"6px 12px",fontSize:11,fontWeight:600}}>
+          📅 {fmtL(today())}
+        </div>
+      </div>
+      <Card style={{marginBottom:14}}>
+        {BIRDS.map((b,i)=>(
+          <div key={b.id}>
+            <div style={{display:"flex",alignItems:"center",gap:11,padding:"12px 0"}}>
+              <div style={{width:44,height:44,borderRadius:12,background:b.bg,border:`2px solid ${b.brd}44`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontSize:22}}>
+                {b.e}
+              </div>
+              <div style={{flex:1}}>
+                <div style={{fontWeight:700,fontSize:13,color:C.txt}}>{b.name}</div>
+                <div style={{fontSize:10,color:C.muted}}>سعر الـ{b.unit} الواحد</div>
+              </div>
+              <div style={{display:"flex",alignItems:"center",gap:4}}>
+                <input type="number" value={vals[b.id]} onChange={e=>setVals(v=>({...v,[b.id]:e.target.value}))} placeholder="0" inputMode="numeric"
+                  style={{width:85,padding:"9px 10px",borderRadius:10,border:`2px solid ${vals[b.id]?b.brd:C.bdr}`,fontSize:15,fontWeight:800,textAlign:"center",outline:"none",fontFamily:"Cairo,sans-serif",background:vals[b.id]?b.bg:C.card,color:b.tx,transition:"all .2s"}}/>
+                <span style={{fontSize:11,color:C.muted,fontWeight:600}}>ج</span>
+              </div>
+            </div>
+            {i<BIRDS.length-1&&<Dvd/>}
+          </div>
+        ))}
+      </Card>
+      <button className="abtn" onClick={save}
+        style={{width:"100%",background:saved?`linear-gradient(135deg,${C.grn},#15803D)`:C.pr,color:"#fff",padding:"16px",fontSize:16,fontWeight:900,borderRadius:13,boxShadow:`0 5px 18px ${saved?C.grn:C.pr}44`,transition:"all .3s"}}>
+        {saved?"✅ تم حفظ الأسعار!":"💾 حفظ أسعار اليوم"}
+      </button>
+    </div>
+  );
+};
+
+/* ══ SUPPLIER TAB — رسالة احترافية ══ */
+const SupplierTab=({orders,supplierPhone})=>{
+  const [sent,setSent]=useState(false);
+  const pending=orders.filter(o=>o.status==="pending");
+  const tally={};pending.forEach(o=>{tally[o.birdId]=(tally[o.birdId]||0)+Number(o.qty||0);});
+  const sorted=Object.entries(tally).sort((a,b)=>b[1]-a[1]);
+  const total=Object.values(tally).reduce((a,b)=>a+b,0);
+
+  const buildMsg=()=>{
+    const d=new Date().toLocaleDateString("ar-EG",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
+    let m=`🐣 *طلبية كتاكيت — مجموعة المودة*\n`;
+    m+=`${"━".repeat(28)}\n`;
+    m+=`📅 *التاريخ:* ${d}\n\n`;
+    m+=`📦 *تفاصيل الطلبية:*\n\n`;
+    sorted.forEach(([id,n])=>{
+      const b=gb(id);
+      m+=`${b.e} ${b.name}: *${fmt(n)} ${b.unit}*\n`;
+    });
+    m+=`\n${"━".repeat(28)}\n`;
+    m+=`📊 *إجمالي الطلبية: ${fmt(total)} طير*\n`;
+    m+=`👥 *عدد العملاء: ${pending.length} عميل*\n`;
+    m+=`${"━".repeat(28)}\n\n`;
+    m+=`نرجو التكرم بالتجهيز في أقرب وقت 🙏\n`;
+    m+=`*مجموعة المودة*`;
+    return m;
+  };
+
+  const sendWA=()=>{
+    if(!supplierPhone){alert("أضف رقم المورد في الإعدادات أولاً");return;}
+    const p=supplierPhone.replace(/[^0-9]/g,"");
+    const ip=p.startsWith("0")?"2"+p:p.startsWith("2")?p:"2"+p;
+    window.open(`https://wa.me/${ip}?text=${encodeURIComponent(buildMsg())}`,"_blank");
+    setSent(true);setTimeout(()=>setSent(false),4000);
+  };
+
+  if(pending.length===0)return(
+    <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"60px 24px",textAlign:"center"}}>
+      <div style={{fontSize:68,marginBottom:14}}>📦</div>
+      <div style={{fontSize:19,fontWeight:800,color:C.pr}}>لا يوجد حجوزات معلقة</div>
+    </div>
+  );
+
+  return(
+    <div style={{padding:14}}>
+      <div style={{background:"linear-gradient(135deg,#075E54,#128C7E)",borderRadius:18,padding:"17px 18px",marginBottom:14,color:"#fff",boxShadow:"0 6px 18px rgba(7,94,84,.35)"}}>
+        <div style={{fontSize:11,opacity:.75,marginBottom:4}}>📦 ملخص الطلبية</div>
+        <div style={{fontSize:32,fontWeight:900}}>{fmt(total)} طير</div>
+        <div style={{fontSize:12,opacity:.8}}>{sorted.length} صنف • {pending.length} عميل</div>
+        {!supplierPhone&&<div style={{marginTop:10,background:"rgba(255,255,255,.15)",borderRadius:9,padding:"7px 12px",fontSize:12,fontWeight:600}}>⚠️ أضف رقم المورد في الإعدادات أولاً</div>}
+      </div>
+      <Card style={{marginBottom:12}}>
+        <div style={{fontWeight:800,fontSize:14,color:C.pr,marginBottom:12}}>📋 تفاصيل الطلبية</div>
+        {sorted.map(([id,n],i)=>{const b=gb(id);const pct=Math.round(n/total*100);return(
+          <div key={id} style={{marginBottom:i<sorted.length-1?14:0}}>
+            <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:6}}>
+              <div style={{width:40,height:40,borderRadius:11,background:b.bg,border:`2px solid ${b.brd}44`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontSize:20}}>{b.e}</div>
+              <div style={{flex:1}}><div style={{fontWeight:700,fontSize:13,color:C.txt}}>{b.name}</div><div style={{fontSize:10,color:C.muted}}>{pct}% من الطلبية</div></div>
+              <div style={{fontWeight:900,fontSize:20,color:b.brd}}>{fmt(n)}</div>
+            </div>
+            <div style={{height:5,background:C.pr6,borderRadius:99,overflow:"hidden"}}>
+              <div style={{height:"100%",width:`${pct}%`,background:b.brd,borderRadius:99}}/>
+            </div>
           </div>
         );})}
-        <div style={{marginTop:14,paddingTop:12,borderTop:`2px dashed ${C.bdr}`,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-          <div style={{fontWeight:800,fontSize:15,color:C.pr}}>📦 الإجمالي</div>
-          <div style={{fontSize:30,fontWeight:900,color:C.pr}}>{fmt(total)} <span style={{fontSize:13}}>طير</span></div>
+        <div style={{marginTop:13,paddingTop:12,borderTop:`2px dashed ${C.bdr}`,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+          <span style={{fontWeight:800,fontSize:14,color:C.pr}}>📦 الإجمالي الكلي</span>
+          <span style={{fontSize:28,fontWeight:900,color:C.pr}}>{fmt(total)} <span style={{fontSize:12}}>طير</span></span>
         </div>
       </Card>
       <Card style={{marginBottom:14}}>
         <div style={{fontSize:12,fontWeight:700,color:C.muted,marginBottom:8}}>👁️ معاينة الرسالة</div>
-        <div style={{background:"#ECF8F1",borderRadius:12,padding:"13px 15px",fontSize:12,color:"#1a1a1a",lineHeight:2.1,whiteSpace:"pre-line",border:"1px solid #C3E8D0"}}>{buildMsg()}</div>
+        <div style={{background:"#ECF8F1",borderRadius:11,padding:"12px 14px",fontSize:12,color:"#1a1a1a",lineHeight:2.1,whiteSpace:"pre-line",border:"1px solid #C3E8D0",direction:"rtl"}}>{buildMsg()}</div>
       </Card>
       <button className="abtn" onClick={sendWA}
-        style={{width:"100%",padding:"19px",fontSize:17,fontWeight:900,borderRadius:17,background:sent?`linear-gradient(135deg,${C.grn},#15803D)`:"linear-gradient(135deg,#25D366,#128C7E)",color:"#fff",boxShadow:"0 6px 20px rgba(18,140,126,.5)",transition:"all .35s",marginBottom:8}}>
-        {sent?"✅ تم الإرسال!":"📲 إرسال على واتساب المورد"}
+        style={{width:"100%",padding:"17px",fontSize:16,fontWeight:900,borderRadius:15,background:sent?"linear-gradient(135deg,#10B981,#059669)":"linear-gradient(135deg,#25D366,#128C7E)",color:"#fff",boxShadow:"0 5px 18px rgba(18,140,126,.45)",transition:"all .3s",marginBottom:8}}>
+        {sent?"✅ تم الإرسال!":"📲 إرسال لواتساب المورد"}
       </button>
       {supplierPhone&&<div style={{textAlign:"center",fontSize:12,color:C.muted}}>📱 {supplierPhone}</div>}
     </div>
@@ -20,47 +790,56 @@ div style={{height:6,background:C.pr6,borderRadius:99,overflow:"hidden"}}><div s
 };
 
 /* ══ FOLLOWUP TAB ══ */
-const FollowupTab=({orders,onFu,onDone,onDelete,prices})=>{
+const FollowupTab=({orders,onFu,onDone,onDelete,prices,onViewCustomer})=>{
   const [fu,setFu]=useState(null);const [search,setSearch]=useState("");
   const active=orders.filter(o=>o.status==="active").filter(o=>!search||o.custName.includes(search)||(o.phone||"").includes(search));
   active.sort((a,b)=>dSince(a.fus?.length?a.fus.at(-1).date:a.delivDate)<dSince(b.fus?.length?b.fus.at(-1).date:b.delivDate)?1:-1);
   const ov=active.filter(o=>{const l=o.fus?.length?o.fus.at(-1).date:o.delivDate;return dSince(l)>=10;});
   return(
     <div style={{paddingBottom:20}}>
-      {ov.length>0&&<div style={{background:`linear-gradient(135deg,${C.red},#B91C1C)`,padding:"13px 18px",display:"flex",gap:10,alignItems:"center"}}>
-        <span style={{fontSize:24}}>🔔</span>
-        <div style={{color:"#fff"}}><div style={{fontWeight:800,fontSize:14}}>{ov.length} عميل تجاوز 10 أيام</div><div style={{fontSize:12,opacity:.85}}>اتصل بهم الآن!</div></div>
-      </div>}
-      <div style={{padding:"14px 14px 10px"}}><input className="ifield" value={search} onChange={e=>setSearch(e.target.value)} placeholder="🔍 بحث بالاسم أو التليفون..."/></div>
-      {active.length===0&&<div style={{textAlign:"center",padding:"55px 24px"}}><div style={{fontSize:58,marginBottom:12}}>✅</div><div style={{fontSize:16,fontWeight:700,color:C.sub}}>{search?"لا نتائج":"لا يوجد عملاء نشطين"}</div></div>}
+      {ov.length>0&&(
+        <div style={{background:"linear-gradient(135deg,#DC2626,#B91C1C)",padding:"12px 16px",display:"flex",gap:10,alignItems:"center"}}>
+          <span style={{fontSize:22}}>🔔</span>
+          <div style={{color:"#fff"}}>
+            <div style={{fontWeight:800,fontSize:13}}>{ov.length} عميل تجاوز 10 أيام</div>
+            <div style={{fontSize:11,opacity:.85}}>اتصل بهم الآن!</div>
+          </div>
+        </div>
+      )}
+      <div style={{padding:"12px 12px 8px"}}>
+        <input className="ifield" value={search} onChange={e=>setSearch(e.target.value)} placeholder="🔍 بحث بالاسم أو التليفون..."/>
+      </div>
+      {active.length===0&&(
+        <div style={{textAlign:"center",padding:"50px 24px"}}>
+          <div style={{fontSize:55,marginBottom:10}}>✅</div>
+          <div style={{fontSize:15,fontWeight:700,color:C.sub}}>{search?"لا نتائج":"لا يوجد عملاء نشطين"}</div>
+        </div>
+      )}
       {active.map((o,idx)=>{
-        const last=o.fus?.length?o.fus.at(-1).date:o.delivDate;const ds=dSince(last);const isOv=ds>=10;const b=gb(o.birdId);
-        const unitP=prices[o.birdId]?Number(prices[o.birdId]):0;const total=unitP*Number(o.qty||0);
+        const last=o.fus?.length?o.fus.at(-1).date:o.delivDate;
+        const ds=dSince(last);const isOv=ds>=10;const b=gb(o.birdId);
         return(
-          <div key={o.id} className="orow" style={{background:C.card,marginBottom:2}}>
-            <div style={{padding:"14px 16px"}}>
-              <div style={{display:"flex",gap:12,alignItems:"flex-start",marginBottom:11}}>
-                <div style={{width:46,height:46,borderRadius:13,background:b.bg,border:`2.5px solid ${b.brd}55`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><span style={{fontSize:23}}>{b.e}</span></div>
-                <div style={{flex:1}}>
-                  <div style={{fontWeight:900,fontSize:15,color:C.txt}}>{o.custName}</div>
-                  <div style={{fontSize:13,color:C.sub}}>{b.short} — {fmt(o.qty)} طير</div>
-                  {total>0&&<div style={{fontSize:12,color:C.pr,fontWeight:800}}>💰 {fmt(total)} ج</div>}
+          <div key={o.id} className="orow" style={{background:C.card,borderRight:`4px solid ${isOv?C.red:C.grn}`,marginBottom:1}}>
+            <div style={{padding:"13px 14px"}}>
+              <div style={{display:"flex",gap:10,alignItems:"center",marginBottom:9}}>
+                <div style={{width:44,height:44,borderRadius:"50%",background:b.bg,border:`2px solid ${b.brd}44`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontSize:21,cursor:"pointer"}} onClick={()=>onViewCustomer(o)}>
+                  {b.e}
+                </div>
+                <div style={{flex:1,cursor:"pointer"}} onClick={()=>onViewCustomer(o)}>
+                  <div style={{fontWeight:800,fontSize:15,color:C.txt}}>{o.custName}</div>
+                  <div style={{fontSize:12,color:C.sub}}>{b.name} — {fmt(o.qty)} {b.unit}</div>
                   {o.phone&&<div style={{fontSize:11,color:C.muted}}>📱 {o.phone}</div>}
                 </div>
-                {o.phone&&<a href={`tel:${o.phone}`} className="abtn" style={{background:`linear-gradient(135deg,${C.grn},#15803D)`,color:"#fff",padding:"11px 15px",fontSize:20,textDecoration:"none",flexShrink:0,borderRadius:13}}>📞</a>}
+                {o.phone&&<a href={`tel:${o.phone}`} className="abtn" style={{background:C.grn,color:"#fff",width:40,height:40,borderRadius:"50%",fontSize:18,textDecoration:"none",flexShrink:0}}>📞</a>}
               </div>
-              <div style={{background:isOv?C.redL:C.grnL,border:`1.5px solid ${isOv?C.red:C.grn}33`,borderRadius:12,padding:"10px 14px",marginBottom:11}}>
-                <div style={{fontWeight:800,fontSize:13,color:isOv?C.red:C.grn}}>{isOv?`⚠️ مر ${ds} يوم — اتصل الآن!`:`📞 آخر متابعة منذ ${ds} يوم`}</div>
-                <div style={{fontSize:11,color:C.muted,marginTop:3}}>الاستلام: {fmtL(o.delivDate)}</div>
+              <div style={{background:isOv?C.redL:C.grnL,border:`1px solid ${isOv?C.red:C.grn}33`,borderRadius:10,padding:"9px 13px",marginBottom:9}}>
+                <div style={{fontWeight:800,fontSize:12,color:isOv?C.red:C.grn}}>{isOv?`⚠️ مر ${ds} يوم — اتصل الآن!`:`📞 آخر متابعة: ${ds} يوم`}</div>
+                <div style={{fontSize:10,color:C.muted,marginTop:2}}>{fmtL(o.delivDate)}</div>
               </div>
-              {o.fus?.length>0&&<div style={{background:C.pr6,borderRadius:10,padding:"8px 12px",marginBottom:10,border:`1px solid ${C.bdr}`}}>
-                <div style={{fontSize:11,fontWeight:700,color:C.sub,marginBottom:3}}>سجل المتابعات:</div>
-                {o.fus.slice(-2).map((f,i)=><div key={i} style={{fontSize:11,color:C.muted,marginBottom:2}}>• {fmtL(f.date)}: {f.note}</div>)}
-              </div>}
-              <div style={{display:"flex",gap:7,flexWrap:"wrap"}}>
-                <button className="abtn" onClick={()=>setFu(o)} style={{background:`linear-gradient(135deg,${C.pr4},${C.pr3})`,color:"#fff",padding:"11px 16px",fontSize:13,flex:1}}>📞 سجّل متابعة</button>
-                <button className="abtn" onClick={()=>onDone(o.id)} style={{background:C.pr6,color:C.muted,padding:"11px 13px",fontSize:13,border:`1px solid ${C.bdr}`}}>🏁 إنهاء</button>
-                <button className="abtn" onClick={()=>onDelete(o.id)} style={{background:C.redL,color:C.red,padding:"11px 12px",fontSize:13}}>🗑️</button>
+              <div style={{display:"flex",gap:7}}>
+                <button className="abtn" onClick={()=>setFu(o)} style={{background:C.pr,color:"#fff",padding:"9px 14px",fontSize:13,flex:1,boxShadow:`0 2px 10px ${C.pr}33`}}>📞 متابعة</button>
+                <button className="abtn" onClick={()=>onDone(o.id)} style={{background:C.pr6,color:C.muted,padding:"9px 12px",fontSize:13,border:`1px solid ${C.bdr}`}}>🏁 إنهاء</button>
+                <button className="abtn" onClick={()=>onDelete(o.id)} style={{background:C.redL,color:C.red,padding:"9px 11px",fontSize:13}}>🗑️</button>
               </div>
             </div>
             {idx<active.length-1&&<Dvd/>}
@@ -70,3 +849,309 @@ const FollowupTab=({orders,onFu,onDone,onDelete,prices})=>{
       {fu&&<FuSheet order={fu} onClose={()=>setFu(null)} onSave={(id,note)=>{onFu(id,note);setFu(null);}}/>}
     </div>
   );
+};
+
+/* ══ SETTINGS TAB ══ */
+const SettingsTab=({spw,pwEnabled,onChangePw,onTogglePw,onLogout,total,supplierPhone,onChangeSup,dark,onToggleDark,syncState})=>{
+  const [old,setOld]=useState("");const [np,setNp]=useState("");const [conf,setConf]=useState("");
+  const [sup,setSup]=useState(supplierPhone||"");const [msg,setMsg]=useState(null);
+  const chPw=()=>{
+    if(pwEnabled&&old!==spw){setMsg({t:"e",m:"كلمة السر الحالية غلط"});return;}
+    if(np.length<4){setMsg({t:"e",m:"4 أرقام على الأقل"});return;}
+    if(np!==conf){setMsg({t:"e",m:"التأكيد غلط"});return;}
+    onChangePw(np);setOld("");setNp("");setConf("");setMsg({t:"s",m:"✅ تم تغيير كلمة السر!"});setTimeout(()=>setMsg(null),3000);
+  };
+  const saveSup=()=>{onChangeSup(sup.trim());setMsg({t:"s",m:"✅ تم حفظ رقم المورد!"});setTimeout(()=>setMsg(null),3000);};
+  const syncMap={ok:"☁️ السحابة متصلة ✅",saving:"☁️ جاري الحفظ...",saved:"✅ محفوظ على السحابة",offline:"📵 محفوظ محلياً فقط",loading:"⏳ جاري التحميل..."};
+  const syncClr={ok:C.grn,saving:"#3B82F6",saved:C.grn,offline:"#F59E0B",loading:"#F59E0B"};
+
+  const Toggle=({on,onToggle})=>(
+    <button onClick={onToggle} style={{width:52,height:28,borderRadius:99,background:on?C.grn:"#ccc",border:"none",cursor:"pointer",position:"relative",transition:"all .3s",flexShrink:0}}>
+      <div style={{position:"absolute",top:3,right:on?3:undefined,left:on?undefined:3,width:22,height:22,borderRadius:"50%",background:"#fff",boxShadow:"0 2px 4px rgba(0,0,0,.2)",transition:"all .3s"}}/>
+    </button>
+  );
+
+  return(
+    <div style={{padding:14}}>
+      {/* Cloud status */}
+      <Card style={{marginBottom:12,border:`1.5px solid ${(syncClr[syncState]||C.grn)}22`}}>
+        <div style={{display:"flex",alignItems:"center",gap:10}}>
+          <span style={{fontSize:22}}>☁️</span>
+          <div style={{flex:1}}>
+            <div style={{fontWeight:700,fontSize:13,color:syncClr[syncState]||C.grn}}>{syncMap[syncState]||syncMap.ok}</div>
+            <div style={{fontSize:11,color:C.muted}}>البيانات محفوظة على Firebase</div>
+          </div>
+        </div>
+      </Card>
+
+      {/* Dark mode */}
+      <Card style={{marginBottom:12}}>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+          <div>
+            <div style={{fontWeight:700,fontSize:14,color:C.txt}}>{dark?"🌙 الوضع الليلي":"☀️ الوضع النهاري"}</div>
+            <div style={{fontSize:11,color:C.muted}}>تبديل مظهر التطبيق</div>
+          </div>
+          <Toggle on={dark} onToggle={onToggleDark}/>
+        </div>
+      </Card>
+
+      {/* Supplier */}
+      <div style={{background:"linear-gradient(135deg,#075E54,#128C7E)",borderRadius:16,padding:16,marginBottom:12,boxShadow:"0 4px 14px rgba(7,94,84,.3)"}}>
+        <div style={{fontWeight:800,fontSize:15,color:"#fff",marginBottom:3}}>📲 رقم واتساب المورد</div>
+        <div style={{fontSize:11,color:"rgba(255,255,255,.7)",marginBottom:10}}>سيُرسل إليه طلب الكتاكيت</div>
+        <input className="ifield" type="tel" value={sup} onChange={e=>setSup(e.target.value)} placeholder="01xxxxxxxxx"
+          style={{marginBottom:10,background:"rgba(255,255,255,.9)",fontSize:15,fontWeight:700,borderColor:"transparent",color:"#111"}}/>
+        <button className="abtn" onClick={saveSup} style={{width:"100%",background:"rgba(255,255,255,.2)",color:"#fff",padding:"12px",fontSize:14,borderRadius:11,border:"1.5px solid rgba(255,255,255,.3)"}}>
+          💾 حفظ الرقم
+        </button>
+        {supplierPhone&&<div style={{fontSize:11,color:"rgba(255,255,255,.6)",textAlign:"center",marginTop:7}}>✅ {supplierPhone}</div>}
+      </div>
+
+      {msg&&<div style={{background:msg.t==="s"?C.grnL:C.redL,color:msg.t==="s"?C.grn:C.red,borderRadius:11,padding:"10px 14px",fontSize:13,fontWeight:700,marginBottom:12,border:`1px solid ${msg.t==="s"?C.grn:C.red}33`}}>{msg.m}</div>}
+
+      {/* Password toggle */}
+      <Card style={{marginBottom:12}}>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:pwEnabled?14:0}}>
+          <div>
+            <div style={{fontWeight:700,fontSize:14,color:C.txt}}>🔒 كلمة السر عند الدخول</div>
+            <div style={{fontSize:11,color:C.muted}}>{pwEnabled?"مفعّلة — سيُطلب منك عند الدخول":"معطّلة — الدخول مباشر"}</div>
+          </div>
+          <Toggle on={pwEnabled} onToggle={onTogglePw}/>
+        </div>
+        {pwEnabled&&(
+          <div className="fu">
+            <Dvd m="0"/>
+            <div style={{paddingTop:12}}>
+              {[["كلمة السر الحالية",old,setOld],["الجديدة",np,setNp],["التأكيد",conf,setConf]].map(([l,v,sv],i)=>(
+                <div key={i} style={{marginBottom:10}}><FL ch={l}/><input type="password" className="ifield" value={v} onChange={e=>sv(e.target.value)} placeholder="••••••"/></div>
+              ))}
+              <button className="abtn" onClick={chPw} style={{width:"100%",background:C.pr,color:"#fff",padding:"12px",fontSize:14,borderRadius:12,boxShadow:`0 3px 12px ${C.pr}33`}}>
+                تغيير كلمة السر
+              </button>
+            </div>
+          </div>
+        )}
+      </Card>
+
+      <Card style={{marginBottom:12}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+          <span style={{fontSize:13,color:C.sub}}>إجمالي الحجوزات المسجلة</span>
+          <span style={{fontSize:22,fontWeight:900,color:C.pr}}>{total}</span>
+        </div>
+      </Card>
+
+      <button className="abtn" onClick={onLogout} style={{width:"100%",background:C.redL,color:C.red,padding:"14px",fontSize:14,borderRadius:13,border:`1px solid ${C.red}22`}}>
+        🚪 تسجيل الخروج
+      </button>
+    </div>
+  );
+};
+
+/* ══ LOGIN ══ */
+const Login=({onLogin,pw})=>{
+  const [v,setV]=useState("");const [err,setErr]=useState(false);
+  const go=()=>{if(v===pw)onLogin();else{setErr(true);setV("");}};
+  return(
+    <div style={{minHeight:"100vh",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:28,background:"linear-gradient(160deg,#020E08 0%,#064E3B 40%,#075E54 75%,#128C7E 100%)",position:"relative",overflow:"hidden"}}>
+      {[[180,160,180],[380,30,110],[30,320,80]].map(([t,r,s],i)=>(
+        <div key={i} style={{position:"absolute",top:t,right:r,width:s,height:s,borderRadius:"50%",background:"rgba(37,211,102,.06)"}}/>
+      ))}
+      <div className="fu" style={{textAlign:"center",marginBottom:32,position:"relative"}}>
+        <div className="fl" style={{fontSize:90,filter:"drop-shadow(0 10px 22px rgba(37,211,102,.3))",marginBottom:10}}>🐥</div>
+        <h1 style={{fontFamily:"Tajawal,Cairo,sans-serif",color:"#fff",fontSize:34,fontWeight:900,marginBottom:5,textShadow:"0 2px 12px rgba(0,0,0,.4)"}}>مجموعة المودة</h1>
+        <div style={{width:56,height:3,background:"linear-gradient(90deg,transparent,#25D366,transparent)",margin:"0 auto 8px"}}/>
+        <p style={{color:"rgba(255,255,255,.55)",fontSize:13}}>نظام إدارة الطيور والحجوزات</p>
+      </div>
+      <div className="fu" style={{width:"100%",maxWidth:340,background:"rgba(255,255,255,.08)",backdropFilter:"blur(18px)",WebkitBackdropFilter:"blur(18px)",borderRadius:24,padding:"28px 24px",border:"1px solid rgba(255,255,255,.15)",boxShadow:"0 20px 56px rgba(0,0,0,.35)"}}>
+        <p style={{color:"rgba(255,255,255,.7)",fontSize:13,textAlign:"center",marginBottom:13,fontWeight:600}}>🔒 أدخل كلمة السر</p>
+        <input type="password" value={v} onChange={e=>{setV(e.target.value);setErr(false);}} onKeyDown={e=>e.key==="Enter"&&go()} placeholder="••••••"
+          style={{width:"100%",padding:"16px",borderRadius:14,border:`2px solid ${err?"#F87171":"rgba(255,255,255,.25)"}`,fontSize:30,textAlign:"center",outline:"none",fontFamily:"Cairo,sans-serif",boxSizing:"border-box",background:"rgba(255,255,255,.1)",color:"#fff",letterSpacing:10,marginBottom:8}}/>
+        {err&&<p style={{color:"#FCA5A5",textAlign:"center",fontSize:12,fontWeight:700,marginBottom:8}}>❌ كلمة السر غلط!</p>}
+        <button onClick={go} style={{width:"100%",marginTop:8,padding:"16px",borderRadius:13,background:"linear-gradient(135deg,#25D366,#128C7E)",color:"#fff",border:"none",fontSize:16,fontWeight:900,cursor:"pointer",fontFamily:"Cairo,sans-serif",boxShadow:"0 6px 20px rgba(37,211,102,.4)"}}>
+          دخول 🔓
+        </button>
+        <p style={{color:"rgba(255,255,255,.35)",fontSize:10,textAlign:"center",marginTop:12}}>كلمة السر الافتراضية: 1234</p>
+      </div>
+    </div>
+  );
+};
+
+/* ══ ROOT APP ══ */
+function App(){
+  const [rdy,setRdy]=useState(false);
+  const [auth,setAuth]=useState(false);
+  const [spw,setSpw]=useState("1234");
+  const [pwEnabled,setPwEnabled]=useState(false);
+  const [orders,setOrders]=useState([]);
+  const [prices,setPrices]=useState({});
+  const [priceDate,setPriceDate]=useState(today());
+  const [supPhone,setSupPhone]=useState("");
+  const [tab,setTab]=useState("home");
+  const [booking,setBooking]=useState(null);
+  const [profile,setProfile]=useState(null);
+  const [dark,setDark]=useState(()=>{try{return localStorage.getItem('mwdark')==='1';}catch{return false;}});
+  const [syncState,setSyncState]=useState("loading");
+
+  Object.assign(C,dark?DARK:LIGHT);
+
+  useEffect(()=>{
+    document.body.classList.toggle('dark',dark);
+    try{localStorage.setItem('mwdark',dark?'1':'0');}catch{}
+  },[dark]);
+
+  useEffect(()=>{
+    setSyncState("loading");
+    loadCloud().then(raw=>{
+      const d=checkPriceReset(raw);
+      if(d){
+        if(d.pw)setSpw(d.pw);
+        if(typeof d.pwEnabled!=="undefined")setPwEnabled(d.pwEnabled);
+        if(d.orders)setOrders(d.orders);
+        if(d.prices)setPrices(d.prices);
+        if(d.priceDate)setPriceDate(d.priceDate);
+        if(d.supPhone)setSupPhone(d.supPhone);
+        if(d!==raw)saveCloud(d,setSyncState);
+      }
+      setSyncState("ok");
+      setRdy(true);
+    }).catch(()=>{setSyncState("offline");setRdy(true);});
+  },[]);
+
+  const buildData=(o,p,pd,sp,pw,pwe)=>({pw,pwEnabled:pwe,orders:o,prices:p,priceDate:pd,supPhone:sp});
+  const sv=useCallback((o,p=prices,pd=priceDate,sp=supPhone,pw=spw,pwe=pwEnabled)=>{
+    setOrders(o);
+    saveCloud(buildData(o,p,pd,sp,pw,pwe),setSyncState);
+  },[prices,priceDate,supPhone,spw,pwEnabled]);
+  const svPw=np=>{setSpw(np);saveCloud(buildData(orders,prices,priceDate,supPhone,np,pwEnabled),setSyncState);};
+  const svPwEnabled=pwe=>{setPwEnabled(pwe);saveCloud(buildData(orders,prices,priceDate,supPhone,spw,pwe),setSyncState);};
+  const svPrices=p=>{setPrices(p);const pd=today();setPriceDate(pd);saveCloud(buildData(orders,p,pd,supPhone,spw,pwEnabled),setSyncState);};
+  const svSup=sp=>{setSupPhone(sp);saveCloud(buildData(orders,prices,priceDate,sp,spw,pwEnabled),setSyncState);};
+
+  const hSave=o=>{const ex=orders.find(x=>x.id===o.id);sv(ex?orders.map(x=>x.id===o.id?o:x):[...orders,o]);setBooking(null);};
+  const hDeliver=id=>sv(orders.map(o=>o.id!==id?o:{...o,status:"active",delivDate:o.delivDate||now()}));
+  const hDelete=id=>sv(orders.filter(o=>o.id!==id));
+  const hFu=(id,note)=>sv(orders.map(o=>o.id!==id?o:{...o,fus:[...(o.fus||[]),{date:now(),note}]}));
+  const hDone=id=>sv(orders.map(o=>o.id!==id?o:{...o,status:"done"}));
+
+  const ovCnt=orders.filter(o=>{if(o.status!=="active")return false;const l=o.fus?.length?o.fus.at(-1).date:o.delivDate;return dSince(l)>=10;}).length;
+  const pendCnt=orders.filter(o=>o.status==="pending").length;
+  const actCnt=orders.filter(o=>o.status==="active").length;
+
+  // Loading screen
+  if(!rdy)return(
+    <div style={{minHeight:"100vh",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",background:"linear-gradient(135deg,#020E08,#064E3B,#075E54)",gap:16}}>
+      <div className="fl" style={{fontSize:72,filter:"drop-shadow(0 6px 16px rgba(37,211,102,.3))"}}>🐥</div>
+      <div style={{color:"rgba(255,255,255,.65)",fontSize:15,fontWeight:700,fontFamily:"Cairo,sans-serif"}}>جاري تحميل البيانات...</div>
+      <div style={{color:"rgba(255,255,255,.35)",fontSize:12,fontFamily:"Cairo,sans-serif"}}>☁️ Firebase</div>
+    </div>
+  );
+  if(!auth&&pwEnabled)return<Login onLogin={()=>setAuth(true)} pw={spw}/>;
+  if(!auth&&!pwEnabled){if(!auth)setAuth(true);}
+
+  const TABS=[
+    {id:"home",    lbl:"الحجوزات", ico:"🏠",badge:pendCnt},
+    {id:"stats",   lbl:"إحصائيات", ico:"📊"},
+    {id:"prices",  lbl:"الأسعار",  ico:"💰"},
+    {id:"supplier",lbl:"المورد",   ico:"📦"},
+    {id:"followup",lbl:"متابعة",   ico:"📞",badge:ovCnt,red:true},
+    {id:"settings",lbl:"إعدادات",  ico:"⚙️"},
+  ];
+
+  // Update profile if orders changed
+  const currentProfile=profile?orders.find(o=>o.id===profile.id)||null:null;
+
+  return(
+    <div style={{fontFamily:"Cairo,sans-serif",direction:"rtl",background:C.bg,minHeight:"100vh",maxWidth:480,margin:"0 auto",transition:"background .3s",position:"relative"}}>
+
+      {/* ── HEADER ── */}
+      <div style={{background:C.hdrBg,padding:"12px 14px 10px",position:"sticky",top:0,zIndex:50,boxShadow:"0 2px 12px rgba(0,0,0,.2)"}}>
+        <div style={{fontSize:10,color:"rgba(255,255,255,.5)",marginBottom:1}}>{fmtL(now())}</div>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+          <div style={{fontFamily:"Tajawal,Cairo,sans-serif",fontSize:20,fontWeight:900,color:"#fff",display:"flex",alignItems:"center",gap:7}}>
+            🐥 مجموعة المودة
+          </div>
+          <div style={{display:"flex",gap:6,alignItems:"center"}}>
+            {/* Sync indicator */}
+            <div style={{background:"rgba(255,255,255,.12)",borderRadius:99,padding:"3px 9px",display:"flex",alignItems:"center",gap:4}}>
+              <span className={syncState==="saving"||syncState==="loading"?"pls":""} style={{fontSize:11}}>
+                {syncState==="ok"||syncState==="saved"?"☁️":syncState==="offline"?"📵":"⏳"}
+              </span>
+              <span style={{fontSize:10,color:"rgba(255,255,255,.75)",fontWeight:600}}>
+                {pendCnt} حجز
+              </span>
+            </div>
+            {actCnt>0&&<div style={{background:"rgba(37,211,102,.25)",borderRadius:99,padding:"3px 9px"}}>
+              <span style={{fontSize:10,color:"#86EFAC",fontWeight:700}}>{actCnt} 📞</span>
+            </div>}
+            <button onClick={()=>setDark(d=>!d)} className="abtn"
+              style={{width:34,height:34,borderRadius:"50%",background:"rgba(255,255,255,.12)",border:"1px solid rgba(255,255,255,.18)",color:"#fff",fontSize:15}}>
+              {dark?"☀️":"🌙"}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* ── CONTENT ── */}
+      <div style={{paddingBottom:80}}>
+        {tab==="home"    &&<HomeTab orders={orders} onDeliver={hDeliver} onDelete={hDelete} onEdit={o=>setBooking(o)} onViewCustomer={o=>setProfile(o)} prices={prices}/>}
+        {tab==="stats"   &&<StatsTab orders={orders} prices={prices}/>}
+        {tab==="prices"  &&<PricesTab prices={prices} onSave={svPrices}/>}
+        {tab==="supplier"&&<SupplierTab orders={orders} supplierPhone={supPhone}/>}
+        {tab==="followup"&&<FollowupTab orders={orders} onFu={hFu} onDone={hDone} onDelete={hDelete} prices={prices} onViewCustomer={o=>setProfile(o)}/>}
+        {tab==="settings"&&<SettingsTab spw={spw} pwEnabled={pwEnabled} onChangePw={svPw} onTogglePw={()=>svPwEnabled(!pwEnabled)} onLogout={()=>{setAuth(false);if(!pwEnabled)setPwEnabled(true);}} total={orders.length} supplierPhone={supPhone} onChangeSup={svSup} dark={dark} onToggleDark={()=>setDark(d=>!d)} syncState={syncState}/>}
+      </div>
+
+      {/* ── BOTTOM NAV ── */}
+      <nav style={{position:"fixed",bottom:0,left:"50%",transform:"translateX(-50%)",width:"100%",maxWidth:480,background:C.nav,backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)",display:"flex",zIndex:100,boxShadow:C.navShadow,paddingBottom:"env(safe-area-inset-bottom,0)"}}>
+        {/* ➕ زر الحجز — أول على اليمين */}
+        <button className="nav-btn" onClick={()=>setBooking("new")}
+          style={{flex:"0 0 14%"}}>
+          <div className="gl" style={{width:40,height:40,borderRadius:"50%",background:"linear-gradient(135deg,#25D366,#128C7E)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,fontWeight:900,color:"#fff",boxShadow:"0 3px 12px rgba(37,211,102,.5)",marginBottom:1}}>
+            ＋
+          </div>
+          <span style={{fontSize:8,color:C.navInactiveTxt,fontWeight:600}}>حجز</span>
+        </button>
+
+        {TABS.map(t=>{
+          const active=tab===t.id;
+          return(
+            <button key={t.id} className="nav-btn" onClick={()=>setTab(t.id)} style={{flex:1}}>
+              {active&&<div style={{position:"absolute",top:0,left:"50%",transform:"translateX(-50%)",width:28,height:2.5,background:C.pr3,borderRadius:"0 0 4px 4px"}}/>}
+              <span style={{fontSize:active?23:19,transition:"font-size .15s"}}>{t.ico}</span>
+              <span style={{fontSize:8,color:active?C.navActiveTxt:C.navInactiveTxt,fontWeight:active?900:500,transition:"color .15s"}}>{t.lbl}</span>
+              {t.badge>0&&<span style={{position:"absolute",top:4,right:"calc(50% - 20px)",background:t.red?C.red:C.pr3,color:"#fff",borderRadius:99,padding:"1px 5px",fontSize:9,fontWeight:900,minWidth:15,textAlign:"center"}}>{t.badge}</span>}
+            </button>
+          );
+        })}
+      </nav>
+
+      {/* ── BOOKING SHEET ── */}
+      {booking&&<BookSheet edit={booking==="new"?null:booking} onClose={()=>setBooking(null)} onSave={hSave} prices={prices}/>}
+
+      {/* ── CUSTOMER PROFILE ── */}
+      {currentProfile&&(
+        <div style={{position:"fixed",inset:0,zIndex:150,maxWidth:480,margin:"0 auto"}} className="sil">
+          <CustomerProfile
+            order={currentProfile}
+            onClose={()=>setProfile(null)}
+            onDelete={id=>{hDelete(id);setProfile(null);}}
+            onEdit={o=>{setBooking(o);setProfile(null);}}
+            onDeliver={id=>{hDeliver(id);setProfile(null);}}
+            prices={prices}
+          />
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Fix for auth not working without password
+const AppWrapper=()=>{
+  const [key,setKey]=useState(0);
+  return <App key={key}/>;
+};
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
+</html>
